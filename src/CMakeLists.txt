@@ -1,6 +1,6 @@
 # SGLD-ICP Library
 add_library(
-    sgld
+    sgdicp
     SHARED
     abstract_sgd_optimizer.cpp
     adadelta.cpp
@@ -16,9 +16,9 @@ add_library(
     utils.cpp
 )
 target_link_libraries(
-    sgld
+    sgdicp
     Boost::boost
-    Eigen3::Eigen
+    #Eigen3::Eigen
     ${PCL_LIBRARIES}
 )
 
@@ -26,7 +26,7 @@ target_link_libraries(
 add_executable( align_pcd align_pcd.cpp )
 target_link_libraries(
     align_pcd
-    sgld
+    sgdicp
     Boost::program_options
 )
 
@@ -35,7 +35,7 @@ add_executable( pcl_align_pcd pcl_align_pcd.cpp )
 target_link_libraries(
     pcl_align_pcd
     Boost::boost
-    Eigen3::Eigen
+    #Eigen3::Eigen
     ${PCL_LIBRARIES}
 )
 
@@ -44,10 +44,10 @@ add_executable( transform_cloud transform_cloud )
 target_link_libraries(
     transform_cloud
     Boost::program_options
-    Eigen3::Eigen
+    #Eigen3::Eigen
     ${PCL_LIBRARIES}
 )
 
 # Optimizer test
 add_executable( test_optimizers test_optimizers.cpp )
-target_link_libraries( test_optimizers sgld )
+target_link_libraries( test_optimizers sgdicp )

@@ -1,6 +1,6 @@
 # Basic cmake setup
 cmake_minimum_required( VERSION 3.1 FATAL_ERROR )
-project( sgld )
+project( sgdicp )
 
 
 set(Boost_USE_STATIC_LIBS OFF)
