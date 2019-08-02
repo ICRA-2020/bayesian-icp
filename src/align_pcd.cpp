@@ -192,8 +192,8 @@ int main(int argc, char * argv[])
 #pragma omp parallel private(transformation_matrix, abort) num_threads(4) //shared (cloud_in)
   
     {
-    while(!abort)
-{
+  //  while(!abort)
+//{
 //make sure each core has its own copy of cloud in beacuse it needs to write/change it internally
 Cloud_t::Ptr cloud_in_copy (new Cloud_t);
 *cloud_in_copy =*cloud_in;
@@ -303,7 +303,7 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
         abort =1;
     }
 
-
+//}
     // +------------------------------------------------------------------------
     // | Perform ICP alignment
     // +------------------------------------------------------------------------
@@ -327,7 +327,7 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
             )
     );
     std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
-    }
+    
 }
     //std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
     auto rmse = compute_rmse(cloud_in, cloud_out, transformation_matrix);
