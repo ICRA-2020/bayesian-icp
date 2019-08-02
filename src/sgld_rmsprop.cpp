@@ -3,7 +3,7 @@
 #include <iostream>
 #include "sgld_rmsprop.h"
 #include<fstream>
-#include"utils.h"
+#include <Eigen/Core>
 SGLD_Preconditioned::SGLD_Preconditioned(
                                          std::vector<double>         initial_values,
                                          double                      step_size,
@@ -101,6 +101,25 @@ void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients
         ofile.close();
     }
 }
+
+
+double SGLD_Preconditioned:: normalizeAngle(double radians)
+{
+    if(std::isnan(radians))
+    {
+        return 0.0;
+    }
+
+    radians = std::fmod(radians + M_PI, 2*M_PI);
+    if(radians < 0.0)
+    {
+        radians += 2*M_PI;
+    }
+    radians -= M_PI;
+
+    assert(radians >= -M_PI && radians <= M_PI);
+
+    return radians;
 }
 
 

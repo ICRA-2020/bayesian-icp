@@ -29,13 +29,18 @@ private:
     double                          m_max_range;
     int                             m_open_mp_id;
     double                          m_cloud_size;
-    std::vector<double>             m_prior_mean
+    std::vector<double>             m_prior_mean;
     float                           m_prior_variance;
     
 
     
     std::vector<double>             m_second_moment;
     int                             m_iteration_count=0;
+
+
+private:
+  double normalizeAngle(double radians);
+
 };
 
 

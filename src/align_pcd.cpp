@@ -186,11 +186,14 @@ int main(int argc, char * argv[])
     // | Parallel Alignment
     // +------------------------------------------------------------------------
  
-    
-#pragma omp parallel num_threads(4) //shared (cloud_in)
+  Eigen::Matrix4d transformation_matrix = Eigen::Matrix4d::Identity();
+ bool abort =0;
+   
+#pragma omp parallel private(transformation_matrix, abort) num_threads(4) //shared (cloud_in)
   
     {
-    
+    while(!abort)
+{
 //make sure each core has its own copy of cloud in beacuse it needs to write/change it internally
 Cloud_t::Ptr cloud_in_copy (new Cloud_t);
 *cloud_in_copy =*cloud_in;
@@ -199,7 +202,7 @@ Cloud_t::Ptr cloud_out_copy (new Cloud_t);
 *cloud_out_copy =*cloud_out;
 
 //total =omp_get_num_threads();
-id = omp_get_thread_num();//pass it to sgld to save independ file for each core to manage burnin.
+int id = omp_get_thread_num();//pass it to sgld to save independ file for each core to manage burnin.
 
         
     std::unique_ptr<SGDICP> sgd_icp;
@@ -296,7 +299,8 @@ id = omp_get_thread_num();//pass it to sgld to save independ file for each core 
     {
         std::cout << "Invalid optimizer specified, valid optiosn are: "
                   << "adadelta, adam, fixed, momentum, and rmsprop" << std::endl;
-        return 1;
+       // return 1;
+        abort =1;
     }
 
 
@@ -308,7 +312,7 @@ id = omp_get_thread_num();//pass it to sgld to save independ file for each core 
     
     auto time = pcl::console::TicToc();
     time.tic();
-    auto transformation_matrix = sgd_icp->align_clouds(
+     transformation_matrix = sgd_icp->align_clouds(
             cloud_in_copy,
             cloud_out_copy,
             SGDICP::Parameters(
@@ -324,6 +328,7 @@ id = omp_get_thread_num();//pass it to sgld to save independ file for each core 
     );
     std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
     }
+}
     //std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
     auto rmse = compute_rmse(cloud_in, cloud_out, transformation_matrix);
 
