@@ -187,13 +187,14 @@ int main(int argc, char * argv[])
     // +------------------------------------------------------------------------
  
   Eigen::Matrix4d transformation_matrix = Eigen::Matrix4d::Identity();
- bool abort =0;
+ int abort =0;
    
 #pragma omp parallel private(transformation_matrix, abort) num_threads(4) //shared (cloud_in)
   
     {
-  //  while(!abort)
+   // while(abort<500)
 //{
+//abort++;
 //make sure each core has its own copy of cloud in beacuse it needs to write/change it internally
 Cloud_t::Ptr cloud_in_copy (new Cloud_t);
 *cloud_in_copy =*cloud_in;
@@ -269,26 +270,28 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
     
     else if (config.get<std::string>("method")=="preconditioned_sgld")
     {
-        std::vector<double> mean_prior ={config.get<double>("prior_mean.x"),
-                                        config.get<double>("prior_mean.y"),
-                                        config.get<double>("prior_mean.z"),
-                                        config.get<double>("prior_mean.roll"),
-                                        config.get<double>("prior_mean.pitch"),
-                                        config.get<double>("prior_mean.yaw")
+      
+ std::vector<double> mean_prior ={config.get<double>("preconditioned_sgld.prior_mean.x"),
+                                        config.get<double>("preconditioned_sgld.prior_mean.y"),
+                                        config.get<double>("preconditioned_sgld.prior_mean.z"),
+                                        config.get<double>("preconditioned_sgld.prior_mean.roll"),
+                                        config.get<double>("preconditioned_sgld.prior_mean.pitch"),
+                                        config.get<double>("preconditioned_sgld.prior_mean.yaw")
             
                                         };
+ 
      //double sgld_step = 0.06147/double(cloud_in->size());
         sgd_icp.reset(new SGDICP
                 (std::unique_ptr<SGLD_Preconditioned>
                  (new SGLD_Preconditioned
                   (initial_guess,
-                   config.get<double>("rmsprop.step-size"),
-                   config.get<double>("rmsprop.decay-rate"),
+                   config.get<double>("preconditioned_sgld.step-size"),
+                   config.get<double>("preconditioned_sgld.decay-rate"),
                    max_range,
                    id,
                    cloud_in->size(),
                    mean_prior,
-                   config.get<float>("prior_variance")
+                   config.get<float>("preconditioned_sgld.prior_variance")
                     )
                    )
                  )
@@ -300,7 +303,7 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
         std::cout << "Invalid optimizer specified, valid optiosn are: "
                   << "adadelta, adam, fixed, momentum, and rmsprop" << std::endl;
        // return 1;
-        abort =1;
+      //  abort =1;
     }
 
 //}
@@ -327,7 +330,7 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
             )
     );
     std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
-    
+   // }
 }
     //std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
     auto rmse = compute_rmse(cloud_in, cloud_out, transformation_matrix);
