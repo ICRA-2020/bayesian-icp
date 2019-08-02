@@ -1,0 +1,64 @@
+{
+    "normalize-cloud": false,
+    "initial-guess":
+    {
+      "x":0.0,
+      "y":0.0,
+      "z":0.0,
+      "roll":0.0,
+      "pitch":0.0,
+      "yaw":0.0
+    },
+
+
+    "method": "adam",
+    "icp": {
+        "batch-size": 150,
+        "max-matching-distance": 1.0,
+        "max-iterations": 150,
+        "convergence-steps": 5,
+        "translational-convergence": 0.05,
+        "rotational-convergence": 0.05,
+        "filter":true
+    },
+
+    "fixed":
+    {
+        "step-size": 1.0
+    },
+    "adam":
+    {
+        "step-size": 0.1,
+        "decay-rate-a": 0.9,
+        "decay-rate-b": 0.999
+    },
+    "adadelta":
+    {
+        "decay-rate": 0.96,
+        "preconditioner": 1e-3
+    },
+    "momentum":
+    {
+      "step-size": 1
+    },
+
+    "rmsprop":
+    {
+      "step-size": 0.01,
+      "decay-rate": 0.9
+    },
+    "preconditioned_sgld":
+    {
+      "step-size": 0.01,
+      "decay-rate": 0.9,
+      "prior_variance": 0.125,
+      "prior_mean": {
+        "x":0.0,
+        "y":0.0,
+        "z":0.0,
+        "roll":0.0,
+        "pitch":0.0,
+        "yaw":0.0
+      }
+    }
+}
