@@ -11,14 +11,14 @@
     },
 
 
-    "method": "adam",
+    "method": "preconditioned_sgld",
     "icp": {
         "batch-size": 150,
         "max-matching-distance": 1.0,
-        "max-iterations": 150,
+        "max-iterations": 500,
         "convergence-steps": 5,
-        "translational-convergence": 0.05,
-        "rotational-convergence": 0.05,
+        "translational-convergence": 0.00005,
+        "rotational-convergence": 0.000005,
         "filter":true
     },
 
@@ -49,7 +49,7 @@
     },
     "preconditioned_sgld":
     {
-      "step-size": 0.01,
+      "step-size": 0.000001,
       "decay-rate": 0.9,
       "prior_variance": 0.125,
       "prior_mean": {
