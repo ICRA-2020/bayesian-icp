@@ -165,8 +165,14 @@ int main(int argc, char * argv[])
     auto config = pt::ptree{};
     pt::read_json(vm["config"].as<std::string>(), config);
 
-
-    auto max_range = get_absolute_max(cloud_in, cloud_out);
+    float max_range =1;
+    
+    if(config.get<bool>("normalize-cloud"))
+    {
+    
+    max_range = get_absolute_max(cloud_in, cloud_out);
+    }
+    
     if(config.get<bool>("normalize-cloud"))
     {
         cloud_in = normalise_clouds(cloud_in, max_range);
@@ -189,7 +195,7 @@ int main(int argc, char * argv[])
   Eigen::Matrix4d transformation_matrix = Eigen::Matrix4d::Identity();
  int abort =0;
    
-#pragma omp parallel private(transformation_matrix, abort) num_threads(4) //shared (cloud_in)
+#pragma omp parallel private(transformation_matrix, abort, max_range) num_threads(4) //shared (cloud_in)
   
     {
    // while(abort<500)
@@ -301,7 +307,7 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
     else
     {
         std::cout << "Invalid optimizer specified, valid optiosn are: "
-                  << "adadelta, adam, fixed, momentum, and rmsprop" << std::endl;
+                  << "adadelta, adam, fixed, momentum, and rmsprop, preconditioned_sgld" << std::endl;
        // return 1;
       //  abort =1;
     }
