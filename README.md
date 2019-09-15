@@ -3,9 +3,9 @@ Introdction
 
 This code provides a reference implementation of method presented in the paper:
 
-"Speeding up ICP using Stochastic Gradient Descent"
+"Estimating Motion Uncertainty With Bayesian ICP"
 *F. Afzal Maken, F. Ramos, L. Ott*
-IEEE International Conference on Robotics Automation, 2019
+submitted to IEEE International Conference on Robotics Automation, 2019
 
 
 Requirements
@@ -44,7 +44,7 @@ Compiling the code will produce three executables:
 align_pcd
 ---------
 
-This program uses the SGD ICP implementation to estimate the transform
+This program uses the Bayesian ICP implementation to estimate the transform and distribution
 between two point clouds, the command line syntax is as follows:
 
 `align_pcd <source_cloud> <target_cloud> <cofig_file>`
