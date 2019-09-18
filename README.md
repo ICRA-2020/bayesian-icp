@@ -5,7 +5,7 @@ This code provides a reference implementation of method presented in the paper:
 
 "Estimating Motion Uncertainty With Bayesian ICP"
 *F. Afzal Maken, F. Ramos, L. Ott*
-submitted to IEEE International Conference on Robotics Automation, 2019
+submitted to IEEE International Conference on Robotics Automation, 2020.
 
 
 Requirements
