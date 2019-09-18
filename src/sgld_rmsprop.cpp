@@ -37,17 +37,19 @@ void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients
     
     
     //---------------
-    /*//-- reduce step size every 500 epoch to reduce effect of noise in final iterations
-    double step_for_noise = m_step_size;
-    if (((m_iteration_count < 1500) ==0) )
-    //if (((m_iteration_count % 300) ==0) && (m_iteration_count < 210))
+    /*
+
+    if (m_iteration_count >1900) ==0) 
     {
-        std::cout<<"iteration # "<<m_iteration_count<<std::endl;
-        m_step_size = m_step_size/2;
-        //step_for_noise = step_for_noise/2;
-        // std::cout<<"step "<<m_step_size<<std::endl;
-        // std::cout<<"step noi"<<step_for_noise<<std::endl;
+         if (m_iteration_count%10==0)
+        {
+        m_step_size = m_step_size*0.8;
+            
+            m_adjust_noise = m_adjust_noise/6;
+        
+       }
     }
+    
      
      */
     //--------------------------
@@ -63,7 +65,7 @@ void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients
        
         double step = (m_step_size*precond);
     
-         double var = (12*step);
+         double var = (step);
         double noise=0;
         
         if ((m_iteration_count % 1==0) || (m_iteration_count==1))//change 1 in first condition to n to inject noise every n iteration
@@ -76,6 +78,7 @@ void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients
         /* if (noise>0.1)
          {
          std::cout<<"noise "<<noise<<std::endl;
+         noise=0.02;
          }*/
        
         if (i<=2)// for translation (0,1,2) priro distribution is gaussian and for rotation it is von mises
