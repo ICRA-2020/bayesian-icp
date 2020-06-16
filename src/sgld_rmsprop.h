@@ -17,7 +17,8 @@ public:
                         int                         open_mp_id,
                         double                      cloud_size,
                         std::vector<double>         prior_mean,
-                        float                       prior_variance
+                        float                       prior_variance,
+                        float			            adjust_noise
             );
     
 protected:
@@ -31,6 +32,7 @@ private:
     double                          m_cloud_size;
     std::vector<double>             m_prior_mean;
     float                           m_prior_variance;
+    float			                m_adjust_noise;
     
 
     
