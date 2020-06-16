@@ -12,7 +12,8 @@ SGLD_Preconditioned::SGLD_Preconditioned(
                                          int                         open_mp_id,
                                          double                      cloud_size,
                                          std::vector<double>         prior_mean,
-                                         float                       prior_variance
+                                         float                       prior_variance,
+                                         float                       adjust_noise
                                          
                                          )   :   AbstractSgdOptimizer(initial_values)
 , m_step_size(step_size)
@@ -24,6 +25,7 @@ SGLD_Preconditioned::SGLD_Preconditioned(
 , m_cloud_size (cloud_size)
 , m_prior_mean (prior_mean)
 , m_prior_variance(prior_variance)
+, m_adjust_noise(adjust_noise)
 {}
 
 void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients)
@@ -65,7 +67,7 @@ void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients
        
         double step = (m_step_size*precond);
     
-         double var = (step);
+         double var = (m_adjust_noise*step);
         double noise=0;
         
         if ((m_iteration_count % 1==0) || (m_iteration_count==1))//change 1 in first condition to n to inject noise every n iteration
