@@ -195,9 +195,9 @@ int main(int argc, char * argv[])
   Eigen::Matrix4d transformation_matrix = Eigen::Matrix4d::Identity();
  int abort =0;
    
-#pragma omp parallel private(transformation_matrix, abort, max_range) num_threads(4) //shared (cloud_in)
+//#pragma omp parallel private(transformation_matrix, abort, max_range) num_threads(4) //shared (cloud_in)
   
-    {
+   // {
    // while(abort<500)
 //{
 //abort++;
@@ -297,7 +297,8 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
                    id,
                    cloud_in->size(),
                    mean_prior,
-                   config.get<float>("preconditioned_sgld.prior_variance")
+                   config.get<float>("preconditioned_sgld.prior_variance"),
+                   config.get<float>("preconditioned_sgld.adjust_noise")
                     )
                    )
                  )
@@ -337,9 +338,9 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
     );
     std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
    // }
-}
+//}
     //std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
-    auto rmse = compute_rmse(cloud_in, cloud_out, transformation_matrix);
+    //auto rmse = compute_rmse(cloud_in, cloud_out, transformation_matrix);
 
     // If the clouds were normalized undo this to obtain the true transformation
     if(config.get<bool>("normalize-cloud"))
@@ -347,7 +348,7 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
         rescale_transformation_matrix(transformation_matrix, max_range);
     }
 
-    std::cout << "RMSE: "<< rmse << "\n";
+   // std::cout << "RMSE: "<< rmse << "\n";
     std::cout << "Transformation_matrix:\n"
               << transformation_matrix << std::endl;
 
