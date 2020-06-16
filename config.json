@@ -50,6 +50,7 @@
     "preconditioned_sgld":
     {
       "step-size": 0.000001,
+      "adjust_noise":1,
       "decay-rate": 0.9,
       "prior_variance": 0.125,
       "prior_mean": {
