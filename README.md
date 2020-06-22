@@ -1,16 +1,16 @@
 Introdction
 ===========
 
-This code provides a reference implementation of method presented in the paper:
+This code provides a reference implementation of method presented in the papers:
 
 "Estimating Motion Uncertainty With Bayesian ICP"
 F. Afzal Maken, F. Ramos, L. Ott
-submitted to IEEE International Conference on Robotics Automation, 2020.
+ICRA, 2020.
 
 and 
 
 "Speeding up Iterative Closest Point Using Stochastic Gradient Descent"
-F. Afzal Maken, F. Ramos, L. Ott
+F. Afzal Maken, F. Ramos, L. Ott,
 ICRA 2019.
 
 Requirements
