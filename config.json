@@ -10,12 +10,22 @@
       "yaw":0.0
     },
 
+"prior":
+    {
+      "mean-x":0.0,
+      "mean-y":0.0,
+      "mean-z":0.0,
+      "mean-roll":0.0,
+      "mean-pitch":0.0,
+      "mean-yaw":0.0,
+      "variance":0.125
+    },
 
     "method": "preconditioned_sgld",
     "icp": {
         "batch-size": 150,
         "max-matching-distance": 1.0,
-        "max-iterations": 500,
+        "max-iterations": 2000,
         "convergence-steps": 5,
         "translational-convergence": 0.00005,
         "rotational-convergence": 0.000005,
@@ -49,17 +59,17 @@
     },
     "preconditioned_sgld":
     {
-      "step-size": 0.000001,
-      "adjust_noise":1,
-      "decay-rate": 0.9,
-      "prior_variance": 0.125,
-      "prior_mean": {
-        "x":0.0,
-        "y":0.0,
-        "z":0.0,
-        "roll":0.0,
-        "pitch":0.0,
-        "yaw":0.0
-      }
+      "step-size": 0.00001,
+      "adjust_noise":50,
+      "decay-rate": 0.9
+     
+    },
+
+ "preconditioned_sgld2":
+    {
+      "step-size": 0.1,
+      "adjust_noise":30,
+      "decay-rate": 0.9
+     
     }
 }

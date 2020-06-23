@@ -1,34 +1,27 @@
 #include <cmath>
 #include <stddef.h>
 #include <iostream>
-#include "sgld_rmsprop.h"
+#include "sgld_rmsprop_2.h"
 #include<fstream>
 #include <Eigen/Core>
-SGLD_Preconditioned::SGLD_Preconditioned(
+SGLD_Preconditioned2::SGLD_Preconditioned2(
                                          std::vector<double>         initial_values,
                                          double                      step_size,
                                          double                      decay_rate_a,
                                          double                      max_range,
                                          int                         open_mp_id,
-                                         double                      cloud_size,
-                                         std::vector<double>         prior_mean,
-                                         float                       prior_variance,
                                          float                       adjust_noise
                                          
-                                         )   :   AbstractSgdOptimizer(initial_values)
+                                         )   :   AbstractSgldOptimizer(initial_values)
 , m_step_size(step_size)
 , m_decay_rate_a(decay_rate_a)
 , m_second_moment(initial_values.size(), 0.0)
 , m_max_range(max_range)
 , m_open_mp_id (open_mp_id)
-
-, m_cloud_size (cloud_size)
-, m_prior_mean (prior_mean)
-, m_prior_variance(prior_variance)
 , m_adjust_noise(adjust_noise)
 {}
 
-void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients)
+void SGLD_Preconditioned2::do_perform_update(std::vector<double> const& gradients)
 {
     
     
@@ -73,29 +66,14 @@ void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients
         if ((m_iteration_count % 1==0) || (m_iteration_count==1))//change 1 in first condition to n to inject noise every n iteration
         {
             noise = sample_distribution(0,var);
-            // noise = sample_distribution(0,var2);
+          
+            
             
         }
+           
+            
+    m_parameters[i] = m_parameters[i] -  0.5*step*gradients[i] + noise;
         
-        /* // if magnitude of noise is high and making the algo diverge, we can control noise from here
-         if (noise>0.1)
-         {
-         std::cout<<"noise "<<noise<<std::endl;
-         noise=0.02;
-         }
-         */
-       
-        if (i<=2)// for translation (0,1,2) priro distribution is gaussian and for rotation it is von mises
-        {
-           
-            
-            m_parameters[i] = m_parameters[i] -  0.5*step*(m_cloud_size*gradients[i] + ((1/m_prior_variance)*(m_parameters[i] - m_prior_mean[i]))) + noise;
-        }
-        else
-        {
-            m_parameters[i] = m_parameters[i] -  0.5*step*(m_cloud_size*gradients[i]+ ((1/m_prior_variance)*(std::sin(m_parameters[i]-m_prior_mean[i]))))+ noise ;
-           
-        }
 
     }
     if (m_iteration_count % 1 ==0)// change 1 to m to save sample every m iterations instead of getting samples every iteration
@@ -110,7 +88,7 @@ void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients
 }
 
 
-double SGLD_Preconditioned:: normalizeAngle(double radians)
+double SGLD_Preconditioned2:: normalizeAngle(double radians)
 {
     if(std::isnan(radians))
     {

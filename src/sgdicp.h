@@ -37,6 +37,7 @@
 
 
 #include "abstract_sgd_optimizer.h"
+#include "abstract_sgld_optimizer.h"
 #include "types.h"
 
 /**
@@ -100,6 +101,14 @@ class SGDICP
          */
         SGDICP(std::unique_ptr<AbstractSgdOptimizer> sgd_optimizer);
 
+	/**
+         * \brief Creates a new instance with the specified SGLD optimizer.
+         *
+         * \param sgld_optimizer optimizer instance to use
+         */
+
+	SGDICP(std::unique_ptr<AbstractSgldOptimizer> sgld_optimizer);
+
         /**
          * \brief Computes the transform between the two clouds using
          *      the provided parameters.
@@ -115,6 +124,23 @@ class SGDICP
                 Parameters const&       parameters
         );
 
+ /**
+         * \brief Computes the transform between the two clouds using
+         *      the provided parameters.
+         *
+         * \param cloud_in source cloud to be transformed onto the target cloud
+         * \param cloud_out target cloud onto which the source cloud should be
+         *      transformed
+         * \return samples of transformation matrix which moves cloud_in onto cloud_out
+         */
+        std::vector<Array6_d> align_clouds_with_bayesian_icp(
+                Cloud_t::Ptr            cloud_in,
+                Cloud_t::Ptr            cloud_out,
+                Parameters const&       parameters,
+		std::vector<double>     prior_mean,
+                float                   prior_variance
+        );
+
 
     private:
         /**
@@ -128,13 +154,14 @@ class SGDICP
         std::vector<double> compute_gradient_terms(
                 Cloud_t::Ptr            raw_cloud_resized,
                 Cloud_t::Ptr            transformed_batch_paired,
-                Cloud_t::Ptr            cloud_out_paired
+                Cloud_t::Ptr            cloud_out_paired,
+		int 			method=0
         );
 
         /**
          * \brief Computes the partial derivates.
          *
-         * \return partial derivative terms
+         * \return partial derivative terms. defualt is m_sgd_optimizer to get the parameters and update gradients. if method=1, then m_sgld_optimizer is used
          */
         std::tuple<
             Eigen::Vector3d,
@@ -144,21 +171,21 @@ class SGDICP
             Eigen::Matrix<double, 3, 3>,
             Eigen::Matrix<double, 3, 3>
         >
-        get_partial_derivative_terms() const;
+        get_partial_derivative_terms(int method=0) const;
 
         /**
          * \brief Returns the current transformation matrix.
          *
          * \return current transformation matrix
          */
-        Eigen::Matrix4d current_transform() const;
+        Eigen::Matrix4d current_transform(int method=0) const;
 
         /**
          * \brief Updates the state in the provided storage.
          *
          * \param storage container into which state information is saved
          */
-        void update_state(Eigen::VectorXd & storage);
+        void update_state(Eigen::VectorXd & storage, int method=0);
 
         /**
          * \brief Returns whether or not translational convergence was achieved.
@@ -169,7 +196,8 @@ class SGDICP
          */
         bool is_translation_converged(
                 Eigen::VectorXd const&  reference_state,
-                double                  threshold
+                double                  threshold,
+		int 			method=0
         );
 
         /**
@@ -181,11 +209,19 @@ class SGDICP
          */
         bool is_rotation_converged(
                 Eigen::VectorXd const&  reference_state,
-                double                  threshold
+                double                  threshold,
+		int 			method=0
         );
 
 
     private:
         //! Optimizer for the transform parameters
         std::unique_ptr<AbstractSgdOptimizer> m_sgd_optimizer;
+
+ 	//! Optimizer for the transform parameters samples
+        std::unique_ptr<AbstractSgldOptimizer> m_sgld_optimizer;
+
+        //! brief a container to store samples of 6d pose parameters 
+       
+        std::vector<Array6_d> m_pose_samples ;
 };

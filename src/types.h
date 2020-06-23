@@ -41,13 +41,15 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-
+#include <array>
 
 using Point_t = pcl::PointXYZ;
 using Cloud_t = pcl::PointCloud<Point_t>;
 
 using ColorPoint_t = pcl::PointXYZRGB;
 using ColorCloud_t = pcl::PointCloud<ColorPoint_t>;
+
+using Array6_d = std::array<double,6>;
 
 
 #endif /* end of include guard */

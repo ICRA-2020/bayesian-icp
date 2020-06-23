@@ -56,6 +56,7 @@
 #include "utils.h"
 
 #include "sgld_rmsprop.h"
+#include "sgld_rmsprop_2.h"
 #include <omp.h>
 
 
@@ -277,33 +278,56 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
     else if (config.get<std::string>("method")=="preconditioned_sgld")
     {
       
- std::vector<double> mean_prior ={config.get<double>("preconditioned_sgld.prior_mean.x"),
-                                        config.get<double>("preconditioned_sgld.prior_mean.y"),
-                                        config.get<double>("preconditioned_sgld.prior_mean.z"),
-                                        config.get<double>("preconditioned_sgld.prior_mean.roll"),
-                                        config.get<double>("preconditioned_sgld.prior_mean.pitch"),
-                                        config.get<double>("preconditioned_sgld.prior_mean.yaw")
+ std::vector<double> mean_prior ={config.get<double>("prior.mean-x"),
+                                        config.get<double>("prior.mean-y"),
+                                        config.get<double>("prior.mean-z"),
+                                        config.get<double>("prior.mean-roll"),
+                                        config.get<double>("prior.mean-pitch"),
+                                        config.get<double>("prior.mean-yaw")
             
                                         };
  
-     //double sgld_step = 0.06147/double(cloud_in->size());
+    // double sgld_step = (config.get<double>("preconditioned_sgld.step-size"))/double(cloud_in->size());//another way to control step size
         sgd_icp.reset(new SGDICP
                 (std::unique_ptr<SGLD_Preconditioned>
                  (new SGLD_Preconditioned
                   (initial_guess,
                    config.get<double>("preconditioned_sgld.step-size"),
+                  // sgld_step,
                    config.get<double>("preconditioned_sgld.decay-rate"),
                    max_range,
                    id,
                    cloud_in->size(),
                    mean_prior,
-                   config.get<float>("preconditioned_sgld.prior_variance"),
+                   config.get<float>("prior.variance"),
                    config.get<float>("preconditioned_sgld.adjust_noise")
                     )
                    )
                  )
                       );
     }
+    
+     else if (config.get<std::string>("method")=="preconditioned_sgld2")
+    {
+      
+ 
+     //double sgld_step = 0.06147/double(cloud_in->size());
+        sgd_icp.reset(new SGDICP
+                (std::unique_ptr<SGLD_Preconditioned2>
+                 (new SGLD_Preconditioned2
+                  (initial_guess,
+                   config.get<double>("preconditioned_sgld2.step-size"),
+                   config.get<double>("preconditioned_sgld2.decay-rate"),
+                   max_range,
+                   id,
+                   config.get<float>("preconditioned_sgld2.adjust_noise")
+                    )
+                   )
+                 )
+                      );
+    }
+    
+    
     
     else
     {
@@ -319,7 +343,8 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
     // +------------------------------------------------------------------------
    
     
-    
+    if (config.get<std::string>("method")!="preconditioned_sgld2")
+    {
     auto time = pcl::console::TicToc();
     time.tic();
      transformation_matrix = sgd_icp->align_clouds(
@@ -337,12 +362,8 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
             )
     );
     std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
-   // }
-//}
-    //std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
-    //auto rmse = compute_rmse(cloud_in, cloud_out, transformation_matrix);
-
-    // If the clouds were normalized undo this to obtain the true transformation
+    
+      // If the clouds were normalized undo this to obtain the true transformation
     if(config.get<bool>("normalize-cloud"))
     {
         rescale_transformation_matrix(transformation_matrix, max_range);
@@ -364,6 +385,93 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
     write_colorized_cloud(cloud_in, "/tmp/cloud_source.pcd", {196, 98, 33});
     write_colorized_cloud(cloud_out, "/tmp/cloud_target.pcd", {89, 96, 99});
     write_colorized_cloud(result, "/tmp/cloud_aligned.pcd", {29, 156, 229});
+    
+    }
+    else
+    {
+    std::vector<double> mean_prior ={config.get<double>("prior.mean-x"),
+                                        config.get<double>("prior.mean-y"),
+                                        config.get<double>("prior.mean-z"),
+                                        config.get<double>("prior.mean-roll"),
+                                        config.get<double>("prior.mean-pitch"),
+                                        config.get<double>("prior.mean-yaw")
+            
+                                        };
+ float variance_prior = config.get<float>("prior.variance");
+    auto time = pcl::console::TicToc();
+    time.tic();
+   auto  transformation_parameters_samples = sgd_icp->align_clouds_with_bayesian_icp(
+            cloud_in_copy,
+            cloud_out_copy,
+            SGDICP::Parameters(
+                //1,
+                config.get<int>("icp.max-iterations"),
+                config.get<int>("icp.batch-size"),
+                config.get<double>("icp.max-matching-distance"),
+                config.get<int>("icp.convergence-steps"),
+                config.get<double>("icp.translational-convergence"),
+                config.get<double>("icp.rotational-convergence"),
+                config.get<bool>("icp.filter")
+                               
+                               
+            ),
+            mean_prior,
+            variance_prior
+    );
+    std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
+    
+    
+    
+      // If the clouds were normalized undo this to obtain the true transformation
+    if(config.get<bool>("normalize-cloud"))
+    {
+        for (int i=0; i<transformation_parameters_samples.size(); i++)
+        {
+           // std::cout<<"before ----";
+           // print_array(transformation_parameters[i]);
+        transformation_parameters_samples[i] =rescale_transformation_parameters(transformation_parameters_samples[i], max_range);
+          // std::cout<<"after ---------- ";
+            print_array(transformation_parameters_samples[i]);
+        }
+       
+    }
+
+    else
+    {
+        for (int i=0; i<transformation_parameters_samples.size(); i++)
+        {
+            print_array(transformation_parameters_samples[i]);
+           
+        }
+    }
+
+    
+        std::string sfile = "/tmp/sgld.txt";
+        for (int i=0; i<transformation_parameters_samples.size(); i++)
+        {
+        std::ofstream ofile (sfile,std::ios::out|std::ios::app);
+        
+        ofile<< (transformation_parameters_samples[i][0])<<" "<<(transformation_parameters_samples[i][1])<<" "<< (transformation_parameters_samples[i][2])<<" "<< normalizeAngle(transformation_parameters_samples[i][3])<<" "<< normalizeAngle(transformation_parameters_samples[i][4])<<" "<< normalizeAngle(transformation_parameters_samples[i][5])<<std::endl;
+        ofile.close();
+        }
+    
+    // Save resulting point cloud
+    pcl::transformPointCloud<Point_t>(
+            *cloud_in2,
+            *result,
+            get_transform(transformation_parameters_samples.back())
+    );
+
+    write_colorized_cloud(cloud_in, "/tmp/cloud_source.pcd", {196, 98, 33});
+    write_colorized_cloud(cloud_out, "/tmp/cloud_target.pcd", {89, 96, 99});
+    write_colorized_cloud(result, "/tmp/cloud_aligned.pcd", {29, 156, 229});
+    }
+   // }
+//}
+    //std::cout << "ICP Duration: " << time.toc() << " ms" << std::endl;
+    //auto rmse = compute_rmse(cloud_in, cloud_out, transformation_matrix);
+
+  
 
     return 0;
 }

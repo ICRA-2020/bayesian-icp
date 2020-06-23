@@ -166,5 +166,40 @@ void rescale_transformation_matrix(
         Eigen::Matrix4d &               transformation_matrix,
         float                           max_absolute
 );
+/**
+ * \brief Rescale the translation part of the transformation matrix overlao function that accepts std::array.
+ *
+ * Scales the translation component of the transformation matrix while keeping
+ * the rotational aspect unchanged.
+ *
+ * \param transformation_matrix the matrix to apply the scaling transform to
+ * \param max_absolute normalization value
+ */
+Array6_d  rescale_transformation_parameters(
+        
+        Array6_d                        params,
+        float                           max_absolute
+);
+/**
+ * \brief converts array of pose params into homogeneous transformation matrix
+ * \param array of pose params
+ * \return 4x4 homogeneous transformation matrix
+ */
+
+Eigen::Matrix4d get_transform(Array6_d const& params) ;
+
+
+
+// function to print array
+
+template <typename T>
+    void print_array(std::array<T,6> vec)
+    {
+        for (int i=0; i<vec.size(); i++)
+        {
+            std::cout<<vec[i]<<" ";
+        }
+        std::cout<<std::endl;
+    }
 
 #endif /* __UTILS_H__ */

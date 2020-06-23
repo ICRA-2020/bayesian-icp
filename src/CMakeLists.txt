@@ -3,6 +3,7 @@ add_library(
     sgdicp
     SHARED
     abstract_sgd_optimizer.cpp
+    abstract_sgld_optimizer.cpp
     adadelta.cpp
     adam.cpp
     fixed_sgd.cpp
@@ -10,6 +11,7 @@ add_library(
     momentum.cpp
 
     sgld_rmsprop.cpp
+    sgld_rmsprop_2.cpp
 
     point_cloud_batch.cpp
     sgdicp.cpp

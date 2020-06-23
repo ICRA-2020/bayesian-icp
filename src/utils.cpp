@@ -366,3 +366,34 @@ void rescale_transformation_matrix(
     transformation_matrix(2, 3) = z_rescaled;
 }
 
+Array6_d  rescale_transformation_parameters(
+        
+        Array6_d                        params,
+        float                           max_absolute
+)
+{
+
+    double a = (params[0] * max_absolute);
+    double b = (params[1] * max_absolute);
+    double c = (params[2]* max_absolute);
+    params[0]=a;
+    params[1]=b;
+    params[2]=c;
+    return params;
+}
+
+Eigen::Matrix4d get_transform(Array6_d const& params) 
+{
+    
+    Eigen::Affine3d transform(Eigen::Affine3d::Identity());
+    Eigen::Matrix3d rot;
+    rot = Eigen::AngleAxisd(params[5], Eigen::Vector3d::UnitZ()) *
+    Eigen::AngleAxisd(params[4], Eigen::Vector3d::UnitY()) *
+    Eigen::AngleAxisd(params[3], Eigen::Vector3d::UnitX());
+    
+    transform.translate(Eigen::Vector3d(params[0], params[1], params[2]));
+    transform.rotate(rot);
+    
+    return transform.matrix();
+}
+
