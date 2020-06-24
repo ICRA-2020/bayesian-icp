@@ -21,7 +21,7 @@ This option implements algorithm 1 of <https://arxiv.org/pdf/1512.07666.pdf>. He
 All the parameters for this method are standard except the *"adjust_noise"* parameter which we might need to adjust the level of noise in MCMC chain for very small step size.   
 
 ### preconditioned_sgld2
-This option implements the algorithm 2 of <http://openaccess.thecvf.com/content_cvpr_2016/papers/Li_Learning_Weight_Uncertainty_CVPR_2016_paper.pdf>.  With this option gradients of prior along with gradients of likelihhod function together are used for getting the preconditioner.  
+This option implements the algorithm 2 of <http://people.ee.duke.edu/~lcarin/dbnn_shape_cvpr.pdf>.  With this option gradients of prior along with gradients of likelihhod function together are used for getting the preconditioner.  
 
 These two options implement **Bayesian ICP**  method <https://arxiv.org/pdf/2004.07973.pdf> which provides us samples of the distributions of pose parameters.
 In Bayesian ICP amount of noise depends on the step size. In case of very small step size, we may need to amplify the amount of noise to explore full parameter space with small number of particles (~1500 to 2000). We may need to tune *"adjust_noise"* parameter.
