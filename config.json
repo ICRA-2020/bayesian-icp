@@ -59,8 +59,8 @@
     },
     "preconditioned_sgld":
     {
-      "step-size": 0.00001,
-      "adjust_noise":50,
+      "step-size": 0.06147,
+      "adjust_noise":3,
       "decay-rate": 0.9
      
     },
