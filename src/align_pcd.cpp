@@ -137,6 +137,7 @@ int main(int argc, char * argv[])
     Cloud_t::Ptr cloud_in(new Cloud_t);
     Cloud_t::Ptr cloud_in2(new Cloud_t);
     Cloud_t::Ptr cloud_out(new Cloud_t);
+    Cloud_t::Ptr cloud_out2(new Cloud_t);
 
     Cloud_t::Ptr result(new Cloud_t);
 
@@ -158,7 +159,9 @@ int main(int argc, char * argv[])
     pcl::removeNaNFromPointCloud(*cloud_in, *cloud_in, indices);
     pcl::removeNaNFromPointCloud(*cloud_in2, *cloud_in, indices);
     pcl::removeNaNFromPointCloud(*cloud_out,*cloud_out, indices);
-
+     //get a copy of clouds to be save without being effected by normalization for visualization
+    cloud_out2=cloud_out;
+    cloud_in2=cloud_in;
 
     // +------------------------------------------------------------------------
     // | Read configuration and setup accordingly
@@ -287,13 +290,13 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
             
                                         };
  
-    // double sgld_step = (config.get<double>("preconditioned_sgld.step-size"))/double(cloud_in->size());//another way to control step size
+    double sgld_step = (config.get<double>("preconditioned_sgld.step-size"))/double(cloud_in->size());//another way to control step size
         sgd_icp.reset(new SGDICP
                 (std::unique_ptr<SGLD_Preconditioned>
                  (new SGLD_Preconditioned
                   (initial_guess,
-                   config.get<double>("preconditioned_sgld.step-size"),
-                  // sgld_step,
+                  // config.get<double>("preconditioned_sgld.step-size"),
+                   sgld_step,//to be independent of N in update equation
                    config.get<double>("preconditioned_sgld.decay-rate"),
                    max_range,
                    id,
@@ -332,7 +335,7 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
     else
     {
         std::cout << "Invalid optimizer specified, valid optiosn are: "
-                  << "adadelta, adam, fixed, momentum, and rmsprop, preconditioned_sgld" << std::endl;
+                  << "adadelta, adam, fixed, momentum, and rmsprop, preconditioned_sgld, preconditioned_sgld2" << std::endl;
        // return 1;
       //  abort =1;
     }
@@ -382,8 +385,8 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
             transformation_matrix
     );
 
-    write_colorized_cloud(cloud_in, "/tmp/cloud_source.pcd", {196, 98, 33});
-    write_colorized_cloud(cloud_out, "/tmp/cloud_target.pcd", {89, 96, 99});
+    write_colorized_cloud(cloud_in2, "/tmp/cloud_source.pcd", {196, 98, 33});
+    write_colorized_cloud(cloud_out2, "/tmp/cloud_target.pcd", {89, 96, 99});
     write_colorized_cloud(result, "/tmp/cloud_aligned.pcd", {29, 156, 229});
     
     }
@@ -462,8 +465,8 @@ int id = omp_get_thread_num();//pass it to sgld to save independ file for each c
             get_transform(transformation_parameters_samples.back())
     );
 
-    write_colorized_cloud(cloud_in, "/tmp/cloud_source.pcd", {196, 98, 33});
-    write_colorized_cloud(cloud_out, "/tmp/cloud_target.pcd", {89, 96, 99});
+    write_colorized_cloud(cloud_in2, "/tmp/cloud_source.pcd", {196, 98, 33});
+    write_colorized_cloud(cloud_out2, "/tmp/cloud_target.pcd", {89, 96, 99});
     write_colorized_cloud(result, "/tmp/cloud_aligned.pcd", {29, 156, 229});
     }
    // }
