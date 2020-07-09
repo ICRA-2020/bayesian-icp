@@ -67,7 +67,7 @@ void SGLD_Preconditioned::do_perform_update(std::vector<double> const& gradients
        
         double step = (m_step_size*precond);
     
-         double var = (m_adjust_noise*step);
+         double var = sqrt(m_adjust_noise*step);//works better
         double noise=0;
         
         if ((m_iteration_count % 1==0) || (m_iteration_count==1))//change 1 in first condition to n to inject noise every n iteration
