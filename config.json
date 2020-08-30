@@ -60,7 +60,7 @@
     "preconditioned_sgld":
     {
       "step-size": 0.06147,
-      "adjust_noise":3,
+      "adjust_noise":1,
       "decay-rate": 0.9
      
     },
@@ -68,7 +68,7 @@
  "preconditioned_sgld2":
     {
       "step-size": 0.1,
-      "adjust_noise":30,
+      "adjust_noise":1,
       "decay-rate": 0.9
      
     }
