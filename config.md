@@ -11,12 +11,12 @@ For kinect scans, it is better not to normalize the clouds. But optimizers work 
 
 ## method
 
-This option lets us choose the optimizer. Currently we have following options:  
+This option lets us choose the optimizer.   
 
-Currently we have two choices of same algorithm (preconditioned SGLD or Bayesian ICP) which differ in how gradients are passed to the optimizers.
+Currently we have two choices of Bayesian ICP algorithm (preconditioned SGLD or Bayesian ICP) which differ in how gradients are passed to the optimizers.
 
 ### preconditioned_sgld 
-This option implements algorithm 1 of <https://arxiv.org/pdf/1512.07666.pdf>. Here preconditioner is obtained using the gradients of the likelihood alone. The gradients of prior is added directly in the update equation of the optimizer.
+This option implements the algorithm 1 of <https://arxiv.org/pdf/1512.07666.pdf>. Here preconditioner is obtained using the gradients of the likelihood alone. The gradient of prior is added directly in the update equation of the optimizer.
 
 All the parameters for this method are standard except the *"adjust_noise"* parameter which we might need to adjust the level of noise in MCMC chain for very small step size.   
 
