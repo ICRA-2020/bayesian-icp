@@ -191,6 +191,15 @@ int main(int argc, char * argv[])
         config.get<double >("initial-guess.pitch"),
         config.get<double >("initial-guess.yaw")
     };
+    
+    //bring initial guess to the scale of clouds
+    if(config.get<bool>("normalize-cloud"))
+    {
+        for (int i=0; i<initial_guess.size(); i++)
+        {
+            initial_guess[i]=initial_guess[i]/max_range;
+        }
+    }
 
     // +------------------------------------------------------------------------
     // | Parallel Alignment
