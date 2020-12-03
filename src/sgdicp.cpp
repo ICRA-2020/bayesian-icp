@@ -82,10 +82,11 @@ Eigen::Matrix4d SGDICP::align_clouds(
     auto iterations = 0;
     int diverge_count = 0;
     
-     double max_dist_sqr = parameters.max_matching_distance *parameters.max_matching_distance;
+     
 
    pcl::registration::CorrespondenceEstimation<Point_t, Point_t> estimator;
     estimator.setInputTarget(cloud_out);
+    double max_dist_sqr = parameters.max_matching_distance *parameters.max_matching_distance;
     // SGD iteration loop
     while(iterations < parameters.iterations && !has_converged)
     {
@@ -182,10 +183,7 @@ if (parameters.filter)//reject duplicate correspondences
     cloud_out_paired->width = cloud_out_paired->points.size ();
     cloud_out_paired->height = 1;
     cloud_out_paired->is_dense = true;
-        
-        
-        
-        
+         
         
         // If correspondences are not found for 100 mini-batches, return
         // the current diverged transform
@@ -195,7 +193,7 @@ if (parameters.filter)//reject duplicate correspondences
         }
 
         // Abort this iteration if not enough matches are found
-        if(cloud_out_paired->size() == 0 || cloud_out_paired->size() < 3)
+        if(cloud_out_paired->size() < 3)
         {
             std::cout << "No correspondences between clouds found" << std::endl;
             diverge_count++;
@@ -257,6 +255,16 @@ if (parameters.filter)//reject duplicate correspondences
         )
  {
   
+    Cloud_t::Ptr raw_batch_resized (new Cloud_t);
+    Cloud_t::Ptr transformed_batch_paired (new Cloud_t);
+    Cloud_t::Ptr cloud_out_paired (new Cloud_t);
+    
+
+    pcl::registration::CorrespondenceEstimation<Point_t, Point_t> estimator;
+    estimator.setInputTarget(cloud_out);
+    double max_dist_sqr = parameters.max_matching_distance *parameters.max_matching_distance;
+    
+     
      m_pose_samples.reserve(parameters.iterations);
       int cloud_size = cloud_in->size();
     
@@ -284,17 +292,78 @@ if (parameters.filter)//reject duplicate correspondences
         );
 
         // Find correspondences between input batch and target cloud
-        auto correspondences = find_correspondences(
-                raw_initial_batch,
-                transformed_batch,
-                cloud_out,
-                parameters.max_matching_distance,
-                parameters.filter
-        );
+        std::vector<int> match_indices;
+        std::vector<double> dist;
+        pcl::CorrespondencesPtr correspondences(new pcl::Correspondences());
+        estimator.setInputSource(transformed_batch);
+        estimator.determineCorrespondences(*correspondences, parameters.max_matching_distance);
+    
+if (parameters.filter)//reject duplicate correspondences
+{
+    auto skip_indices = erase_duplicate_correspondences(correspondences);
+    for(size_t i=0; i<correspondences->size(); ++i)
+    {
+    
+        if(std::find(skip_indices.begin(), skip_indices.end(), i) != skip_indices.end())
+            {
+            continue;
+            }
+        else
 
-        auto raw_batch_resized = std::get<0>(correspondences);
-        auto transformed_batch_paired = std::get<1>(correspondences);
-        auto cloud_out_paired = std::get<2>(correspondences);
+        {
+        raw_batch_resized->points.push_back(
+                    raw_initial_batch->points[(*correspondences)[i].index_query]
+                                                );
+        transformed_batch_paired->points.push_back(
+                    transformed_batch->points[(*correspondences)[i].index_query]
+                                              );
+        cloud_out_paired->points.push_back(
+                    cloud_out->points[(*correspondences)[i].index_match]
+                                            );
+        match_indices.push_back((*correspondences)[i].index_match);
+        dist.push_back((*correspondences)[i].distance);
+        
+        }
+    }
+}
+    else
+    
+    {
+        
+        for(size_t i=0; i<correspondences->size(); ++i)
+            {
+
+        
+        raw_batch_resized->points.push_back(
+                    raw_initial_batch->points[(*correspondences)[i].index_query]
+                                                );
+        transformed_batch_paired->points.push_back(
+                    transformed_batch->points[(*correspondences)[i].index_query]
+                                              );
+        cloud_out_paired->points.push_back(
+                    cloud_out->points[(*correspondences)[i].index_match]
+                                            );
+        match_indices.push_back((*correspondences)[i].index_match);
+        dist.push_back((*correspondences)[i].distance);
+        
+            }
+        
+    }
+    
+    
+    
+    raw_batch_resized->width = raw_batch_resized->points.size ();
+    raw_batch_resized->height = 1;
+    raw_batch_resized->is_dense = true;
+    
+    transformed_batch_paired->width = transformed_batch_paired->points.size ();
+    transformed_batch_paired->height = 1;
+    transformed_batch_paired->is_dense = true;
+    
+    cloud_out_paired->width = cloud_out_paired->points.size ();
+    cloud_out_paired->height = 1;
+    cloud_out_paired->is_dense = true;
+        
 
         // If correspondences are not found for 100 mini-batches, return
         // the current diverged transform
@@ -305,7 +374,7 @@ if (parameters.filter)//reject duplicate correspondences
         }
 
         // Abort this iteration if not enough matches are found
-        if(cloud_out_paired->size() == 0 || cloud_out_paired->size() < 3)
+        if(cloud_out_paired->size() < 3)
         {
             std::cout << "No correspondences between clouds found" << std::endl;
             diverge_count++;
@@ -319,6 +388,10 @@ if (parameters.filter)//reject duplicate correspondences
                 cloud_out_paired,
                 1
         );
+        
+         raw_batch_resized.reset(new Cloud_t);
+         transformed_batch_paired.reset(new Cloud_t);
+         cloud_out_paired.reset(new Cloud_t);
         
         //add the gradient of prior
      auto  param= m_sgld_optimizer->get_parameters();
