@@ -43,6 +43,8 @@
 #include "sgdicp.h"
 #include "point_cloud_batch.h"
 #include "utils.h"
+#include <pcl/search/kdtree.h>
+#include <pcl/kdtree/kdtree_flann.h>
 
 
 SGDICP::SGDICP(std::unique_ptr<AbstractSgdOptimizer> sgd_optimizer)
@@ -64,8 +66,12 @@ Eigen::Matrix4d SGDICP::align_clouds(
         Parameters const&               parameters
 )
 {
+    
+    Cloud_t::Ptr raw_batch_resized (new Cloud_t);
+    Cloud_t::Ptr transformed_batch_paired (new Cloud_t);
+    Cloud_t::Ptr cloud_out_paired (new Cloud_t);
+    
     // Mini batch generator
-   
     auto batcher = PointCloudBatch(*cloud_in, parameters.batch_size);
 
     // Convergence monitoring
@@ -75,6 +81,11 @@ Eigen::Matrix4d SGDICP::align_clouds(
     auto convergence_count = 0;
     auto iterations = 0;
     int diverge_count = 0;
+    
+     double max_dist_sqr = parameters.max_matching_distance *parameters.max_matching_distance;
+
+   pcl::registration::CorrespondenceEstimation<Point_t, Point_t> estimator;
+    estimator.setInputTarget(cloud_out);
     // SGD iteration loop
     while(iterations < parameters.iterations && !has_converged)
     {
@@ -86,7 +97,7 @@ Eigen::Matrix4d SGDICP::align_clouds(
                 *transformed_batch,
                 current_transform()
         );
-
+/*
         // Find correspondences between input batch and target cloud
         auto correspondences = find_correspondences(
                 raw_initial_batch,
@@ -99,7 +110,83 @@ Eigen::Matrix4d SGDICP::align_clouds(
         auto raw_batch_resized = std::get<0>(correspondences);
         auto transformed_batch_paired = std::get<1>(correspondences);
         auto cloud_out_paired = std::get<2>(correspondences);
+*/
+        std::vector<int> match_indices;
+        std::vector<double> dist;
+        pcl::CorrespondencesPtr correspondences(new pcl::Correspondences());
+        estimator.setInputSource(transformed_batch);
+        estimator.determineCorrespondences(*correspondences, parameters.max_matching_distance);
+    
+if (parameters.filter)//reject duplicate correspondences
+{
+    auto skip_indices = erase_duplicate_correspondences(correspondences);
+    for(size_t i=0; i<correspondences->size(); ++i)
+    {
+    
+        if(std::find(skip_indices.begin(), skip_indices.end(), i) != skip_indices.end())
+            {
+            continue;
+            }
+        else
 
+        {
+        raw_batch_resized->points.push_back(
+                    raw_initial_batch->points[(*correspondences)[i].index_query]
+                                                );
+        transformed_batch_paired->points.push_back(
+                    transformed_batch->points[(*correspondences)[i].index_query]
+                                              );
+        cloud_out_paired->points.push_back(
+                    cloud_out->points[(*correspondences)[i].index_match]
+                                            );
+        match_indices.push_back((*correspondences)[i].index_match);
+        dist.push_back((*correspondences)[i].distance);
+        
+        }
+    }
+}
+    else
+    
+    {
+        
+        for(size_t i=0; i<correspondences->size(); ++i)
+            {
+
+        
+        raw_batch_resized->points.push_back(
+                    raw_initial_batch->points[(*correspondences)[i].index_query]
+                                                );
+        transformed_batch_paired->points.push_back(
+                    transformed_batch->points[(*correspondences)[i].index_query]
+                                              );
+        cloud_out_paired->points.push_back(
+                    cloud_out->points[(*correspondences)[i].index_match]
+                                            );
+        match_indices.push_back((*correspondences)[i].index_match);
+        dist.push_back((*correspondences)[i].distance);
+        
+            }
+        
+    }
+    
+    
+    
+    raw_batch_resized->width = raw_batch_resized->points.size ();
+    raw_batch_resized->height = 1;
+    raw_batch_resized->is_dense = true;
+    
+    transformed_batch_paired->width = transformed_batch_paired->points.size ();
+    transformed_batch_paired->height = 1;
+    transformed_batch_paired->is_dense = true;
+    
+    cloud_out_paired->width = cloud_out_paired->points.size ();
+    cloud_out_paired->height = 1;
+    cloud_out_paired->is_dense = true;
+        
+        
+        
+        
+        
         // If correspondences are not found for 100 mini-batches, return
         // the current diverged transform
         if (diverge_count==100) {
@@ -122,6 +209,10 @@ Eigen::Matrix4d SGDICP::align_clouds(
                 cloud_out_paired
         );
         m_sgd_optimizer->update_parameters(gradient_terms);
+         raw_batch_resized.reset(new Cloud_t);
+         transformed_batch_paired.reset(new Cloud_t);
+         cloud_out_paired.reset(new Cloud_t);
+        
 
         // Check for convergence
         bool translation_converged = is_translation_converged(
