@@ -17,7 +17,7 @@ ICRA 2019.
 Requirements
 ============
 
-The following libraries are needed to compile and run the code, the is
+The following libraries are needed to compile and run the code, the code is
 known to run on Ubuntu 16.04.
 
 - boost
