@@ -3,16 +3,14 @@ Introdction
 
 This code provides a reference implementation of method presented in the papers:
 
-"Estimating Motion Uncertainty With Bayesian ICP"  
+["Estimating Motion Uncertainty With Bayesian ICP"](https://arxiv.org/pdf/2004.07973.pdf)  
 F. Afzal Maken, F. Ramos, L. Ott  
-ICRA, 2020.  
-<https://arxiv.org/pdf/2004.07973.pdf>  
+ICRA, 2020.    
 and 
 
-"Speeding up Iterative Closest Point Using Stochastic Gradient Descent"  
+["Speeding up Iterative Closest Point Using Stochastic Gradient Descent"[(https://arxiv.org/pdf/1907.09133.pdf)  
 F. Afzal Maken, F. Ramos, L. Ott,   
 ICRA 2019.  
- <https://arxiv.org/pdf/1907.09133.pdf>  
  
 Requirements
 ============
