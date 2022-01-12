@@ -8,7 +8,7 @@ F. Afzal Maken, F. Ramos, L. Ott
 ICRA, 2020.    
 and 
 
-["Speeding up Iterative Closest Point Using Stochastic Gradient Descent"[(https://arxiv.org/pdf/1907.09133.pdf)  
+["Speeding up Iterative Closest Point Using Stochastic Gradient Descent"](https://arxiv.org/pdf/1907.09133.pdf)  
 F. Afzal Maken, F. Ramos, L. Ott,   
 ICRA 2019.  
  
